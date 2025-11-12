@@ -1,0 +1,131 @@
+import numpy
+import pandas
+import matplotlib.pyplot as plt
+
+raw = pandas.read_csv(r"C:\Users\44784\Desktop\Skills Bootcamp\SalesDatabase\producttype.csv")
+
+#then we create a copy, then a value column for total cost of each purchase
+#and add a month column
+data = raw.copy()
+data['value']=0
+data['value']=data['quantity']*data['price']
+data['month']=0
+#create a column for the category of parts, pre filled with 'parts'.
+data['category']='Parts'
+
+
+#then determine month of each purchase
+months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+for i in range(len(data)):
+    date = data.loc[i,'salesdate']
+    for month in months:
+        if date.startswith('2022-'+month):
+            data.loc[i,'month']=int(month)
+        else:
+            continue
+
+#label the product type for each transaction
+values1 = {'1000':'Touring','2000':'Touring','3000':'Touring','Frame':'Frame'}
+values2 = {'Jersey':'Clothing','Socks':'Clothing','Gloves':'Clothing','Vest':'Clothing',
+          'Tights':'Clothing','Shorts':'Clothing','100':'Mountain','200':'Mountain','300':'Mountain','400':'Mountain','500':'Mountain','600':'Mountain',
+          '150':'Road','250':'Road','350':'Road','450':'Road','550':'Road','650':'Road','750':'Road'}
+
+for i in range(len(data)):
+    description = data.loc[i,'name']
+    for key in list(values2.keys()):
+        if description.find(key)>0:
+            data.loc[i,'category'] = values2[key]
+            break
+        else:
+            continue
+    for key in list(values1.keys()):
+        if description.find(key)>0:
+            data.loc[i,'category'] = values1[key]
+            break
+        else:
+            continue
+
+#produce a overall bar charts that shows the breakdown of sales value, items sold
+# by 'Bike', 'Parts' and 'Clothing'
+road      = data[data['category']=='Road']
+mountain  = data[data['category']=='Mountain']
+touring   = data[data['category']=='Touring']
+frame     = data[data['category']=='Frame']
+parts     = data[data['category']=='Parts']
+clothing  = data[data['category']=='Clothing']
+bikes     = pandas.concat([road,mountain,touring])
+tot_parts = pandas.concat([parts, frame])
+'''
+#plot bar chart for total value of sales per category
+vsum           = [bikes.value.sum(),tot_parts.value.sum(),clothing.value.sum()]
+isum           = [bikes.quantity.sum(),tot_parts.quantity.sum(),clothing.quantity.sum()]
+labels         = ['Bikes','Parts','Clothing']
+val_label      = ['Bikes: 58.1%','Parts: 41.5%','Clothing: 0.4%']
+item_label     = ['391','1186','104']
+colours        = ['tab:red','tab:blue','tab:orange']
+fig,axs        = plt.subplots(1,2)
+axs[0].bar(labels,vsum,label=val_label,color=colours)
+axs[0].set_ylabel('Sales Value (£)')
+axs[0].set_title('Sales Value by category')
+axs[0].legend(title = 'Percentages', loc='lower left')
+axs[1].bar(labels,isum,label=item_label,color=colours)
+axs[1].set_ylabel('Units Sold')
+axs[1].set_title('Units sold by category')
+axs[1].legend(title = 'Amount')
+plt.show()
+
+#bar chart for total sales value and items with categories split further
+vsum1          = [road.value.sum(),mountain.value.sum(),touring.value.sum(),frame.value.sum(),parts.value.sum(),clothing.value.sum()]
+isum1          = [road.quantity.sum(),mountain.quantity.sum(),touring.quantity.sum(),frame.quantity.sum(),parts.quantity.sum(),clothing.quantity.sum()]
+labels1        = ['Road','Mountain','Touring','Frame','Parts','Clothing']
+val_label1      = ['Road: 25.8%','Mountain: 21.7%', 'Touring: 10.6%','Frames: 20.8%','Parts: 20.7%','Clothing: 0.4%']
+item_label1    = ['160,','150','81','255','931','104']
+colours1       = ['xkcd:crimson','xkcd:red','xkcd:salmon',"xkcd:robin's egg",'xkcd:cerulean','xkcd:light orange']
+fig,axs        = plt.subplots(1,2)
+axs[0].bar(labels1,vsum1,label=val_label1,color=colours1)
+axs[0].set_ylabel('Sales Value (£)')
+axs[0].set_title('Sales Value by category')
+axs[0].legend(title = 'Percentages', loc='lower left')
+axs[1].bar(labels1,isum1,label=item_label1,color=colours1)
+axs[1].set_ylabel('Units Sold')
+axs[1].set_title('Units sold by Sub-Category')
+axs[1].legend(title = 'Amount')
+plt.show()
+'''
+#data for monthly units sold broken into bikes, parts and clothing
+Bikes    = numpy.array([46,22,25,31,38,20,47,41,3,51,29,38])
+Parts    = numpy.array([107,39,77,123,89,85,61,134,158,97,120,96])
+Clothing = numpy.array([13,5,4,9,6,39,8,0,4,9,7,0])
+plt.bar(months, Parts, label = 'Parts', color='tab:blue')
+plt.bar(months, Bikes, bottom=Parts, label = 'Bikes', color='tab:red')
+plt.bar(months, Clothing, bottom=Parts+Bikes, label = 'Clothing', color='tab:orange')
+plt.xlabel('Months')
+plt.ylabel('Units Sold')
+plt.ylim(0,210)
+plt.title('Units Sold per Category per Month')
+plt.legend(title='Category',loc='lower right')
+plt.show()
+
+#data for ploting the 5 categories by month
+data_touring    = numpy.array([2,0,3,3,13,0,4,5,3,19,12,17])
+data_road       = numpy.array([14,12,14,18,16,11,30,11,0,15,0,19])
+data_mountain   = numpy.array([30,10,8,10,9,9,13,25,0,17,17,2])
+data_frame      = numpy.array([9,7,4,33,14,34,22,49,16,18,43,6])
+data_parts      = numpy.array([98,32,73,90,75,51,39,85,142,79,77,90])
+fig,ax          = plt.subplots(1,2)
+ax[0].bar(months, data_parts, label = 'Parts', color="xkcd:robin's egg")
+ax[0].bar(months, data_frame, bottom=data_parts, label = 'Frames', color='xkcd:cerulean')
+ax[0].set_xlabel('Months')
+ax[0].set_ylabel('Units Sold')
+ax[0].set_ylim(0,210)
+ax[0].set_title('Units Sold per Category per Month')
+ax[0].legend(title='Category',loc='lower right', borderpad = 0.25, fontsize=8)
+ax[1].bar(months, data_road , label = 'Road', color='xkcd:crimson')
+ax[1].bar(months, data_mountain, bottom=data_road, label = 'Mountain', color='xkcd:red')
+ax[1].bar(months, data_touring , bottom=data_road+data_mountain, label = 'Touring', color='xkcd:salmon')          
+ax[1].set_xlabel('Months')
+ax[1].set_ylabel('Units Sold')
+ax[1].set_ylim(0,60)
+ax[1].set_title('Units Sold per Category per Month')
+ax[1].legend(title='Category',loc='upper left',borderpad=0.25, fontsize=8)
+plt.show()
