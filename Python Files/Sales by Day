@@ -1,0 +1,38 @@
+import pandas
+import numpy
+import matplotlib.pyplot as plt
+
+
+#import file containing saledate, price, quantity, then clean it of zero value entries
+#create a column for total sale value, then order it by date
+
+data = pandas.read_csv(r"C:\Users\44784\Desktop\Skills Bootcamp\SalesDatabase\SalesPriceValue.csv")
+data['value']=0
+data['value']= data['price']*data['quantity']
+data = data[data.value!=0]
+data = data.sort_values('salesdate')
+print(data)
+
+#this produces a graph that looks noisy, so try groupby date and sum the values each day
+#produce a graph that shows the total transactions in chronological order but omits days
+#with no purchase which could be important
+grouped = data.groupby('salesdate')['value'].sum()
+print(grouped)
+
+#produce som statistics, this produces the average sales value per day.
+stats = grouped.describe()
+print(stats)
+
+#data for graphing
+xrange = numpy.array(range(0,len(grouped),1))
+average = numpy.ones((len(grouped),1),int)*5401
+yrange = grouped.to_numpy()
+plt.plot(xrange,average,'k--',label='Average purchase £5401')
+plt.xlabel('Days')
+plt.ylabel('Sales value (£)')
+plt.xlim(0,196)
+plt.ylim(0,34000)
+plt.legend()
+plt.bar(xrange,yrange)
+plt.title('Sales value per day')
+plt.show()
