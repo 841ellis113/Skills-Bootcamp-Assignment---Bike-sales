@@ -6,71 +6,54 @@ import pandas
 data = pandas.read_csv(r"C:\Users\44784\Desktop\Skills Bootcamp\SalesDatabase\salesdate_value.csv")
 
 #create a new column and then manipulate it to get sales value for each transaction by quantity*price
-data['value']=0
-data['value']=data['quantity']*data['price']
-data['month']=0
+data['value']= 0
+data['value']= data['quantity']*data['price']
+data['month']= 0
+data['day']  = 0
 
-#Need to fill month colume depending on the salesdate, iterate over sales date and then
-#identify which month it is from the string, populate month column with number that indicates
-#month so that they can be grouped. Gives a warning, due to slicing magic
-#should make a copy of the dataframe to populate but everything works!
-months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+
+#split the date of each sale into day and month of the year
 for i in range(len(data)):
-          date = data['salesdate'][i]
-          for month in months:
-              if date.startswith('2022-'+month):
-                  data['month'][i]=int(month)
-              else:
-                  continue
+    date = data.loc[i,'salesdate']
+    year  = int(date.rsplit(sep='-')[0])
+    month = int(date.rsplit(sep='-')[1])
+    day   = int(date.rsplit(sep='-')[2])
+    data.loc[i,'month']= month
+    data.loc[i,'day']  = day
 
-print(data)
-
-#next filter out 0 value transactions
-#will use this multiple times
+#remove the zero entries
 clean = data[data['value']!=0]
 
-#group by month and sum up totals and quantity to get monthly transactions and sale figures
-groupedm = clean.groupby('month')
-totalValue  = groupedm.sum()
+#group by month and sum the total sales value and the number of items sold as well as the
+#number of days sales were made.
+units  = clean.groupby('month')['quantity'].sum()
+unitsN = units.to_numpy()
 
-#create an array of monthly revenue totals
-salesfig = totalValue['value'].to_numpy()
+sales  = clean.groupby('month')['value'].sum()
+salesN = sales.to_numpy()
+print(sales.describe())
+days  = clean.groupby('month')['salesdate'].nunique()
+daysN = days.to_numpy()
 
-#and do the same for the number of items sold per month
-trans    = totalValue['quantity'].to_numpy()
+#x axis for graphs
+months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-#create data for the number of purchases per month
-purchases = []
-for i in range(1,13):
-    purchases.append(groupedm.count()['salesdate'][i])
-pdata = numpy.array(purchases)
-
-#x axis for the graphs
-xmonth   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-
-#graph sales value per month
-plt.bar(xmonth,salesfig)
-plt.xlabel('months')
-plt.ylabel('Value')
-plt.title('Sales Value per Month')
-plt.show()
-
-#graphs
+#graph sales value  and items sold per month
 fig, ax1 = plt.subplots()
-
-color = 'blue'
-ax1.set_xlabel('month')
-ax1.set_ylabel('Number of Transactions', color=color)
-ax1.plot(xmonth, pdata, color=color)
-ax1.tick_params(axis='y', labelcolor=color)
-
-ax2 = ax1.twinx()  
-
-color = 'red'
-ax2.set_ylabel('Items sold', color=color)  # we already handled the x-label with ax1
-ax2.plot(xmonth, trans, color=color)
-ax2.tick_params(axis='y', labelcolor=color)
-
+ax1.bar(months, salesN, color='xkcd:salmon', label='Revenue')
+ax1.set_xlabel('Months')
+ax1.set_ylabel('Revenue (£)', color='xkcd:salmon')
+ax1.tick_params(axis='y', labelcolor='xkcd:salmon')
+plt.legend(loc='upper left')
+ax2 = ax1.twinx()
+ax2.set_ylabel('Units Sold', color='xkcd:cerulean')
+ax2.plot(months, units, color='xkcd:cerulean', label = 'Items')
+ax2.tick_params(axis='y', labelcolor='xkcd:cerulean')
+plt.legend(loc='upper right')
 fig.tight_layout()
 plt.show()
 
+plt.bar(months,days)
+plt.title('Number Of Days With Sales')
+plt.ylim(0,25)
+plt.show()
