@@ -1,4 +1,4 @@
-# Skills-Bootcamp-Assignment---Bike-sales (W.I.P as of 12/11/2025)
+# Skills-Bootcamp-Assignment---Bike-sales (Completed 28/11/2025)
 
 This data analysis assignment was completed during a skills bootcamp at Gateshead college. The aim of the assignment was to take raw data from a Bike retailer (from 2022) and analyse it to discover trend in the data that would be beneficial to the retailer. This repository contains scripts that written in python, using the Pandas module.
 
